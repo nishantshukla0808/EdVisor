@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -16,7 +16,7 @@ model User {
   password  String?
   name      String
   avatar    String?
-  role      Role     @default(STUDENT)
+  role      String   @default("STUDENT") // STUDENT, MENTOR, ADMIN
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -35,8 +35,8 @@ model Student {
   id       String @id @default(cuid())
   userId   String @unique
   bio      String?
-  goals    String[]
-  interests String[]
+  goals    String? // comma-separated values
+  interests String? // comma-separated values
   
   user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
@@ -49,17 +49,17 @@ model Student {
 }
 
 model Mentor {
-  id          String       @id @default(cuid())
-  userId      String       @unique
+  id          String  @id @default(cuid())
+  userId      String  @unique
   bio         String
-  expertise   String[]
-  experience  Int          // years of experience
-  tier        MentorTier   @default(TIER1)
-  hourlyRate  Int          // in cents (e.g., 5000 = $50.00)
-  availability Json        // { monday: ['09:00-17:00'], tuesday: [], ... }
-  isAvailable Boolean      @default(true)
-  rating      Float        @default(0.0)
-  totalReviews Int         @default(0)
+  expertise   String  // comma-separated values
+  experience  Int     // years of experience
+  tier        String  @default("TIER1") // TIER1, TIER2, TIER3
+  hourlyRate  Int     // in cents (e.g., 5000 = $50.00)
+  availability String // JSON string: { monday: ['09:00-17:00'], tuesday: [], ... }
+  isAvailable Boolean @default(true)
+  rating      Float   @default(0.0)
+  totalReviews Int    @default(0)
   
   user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
@@ -71,16 +71,16 @@ model Mentor {
 }
 
 model Booking {
-  id          String        @id @default(cuid())
+  id          String   @id @default(cuid())
   studentId   String
   mentorId    String
   startTime   DateTime
   endTime     DateTime
-  status      BookingStatus @default(PENDING)
+  status      String   @default("PENDING") // PENDING, CONFIRMED, COMPLETED, CANCELLED
   meetingLink String?
   notes       String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   mentor  Mentor  @relation(fields: [mentorId], references: [id], onDelete: Cascade)
@@ -109,16 +109,16 @@ model Review {
 }
 
 model Payment {
-  id            String        @id @default(cuid())
-  bookingId     String        @unique
+  id            String   @id @default(cuid())
+  bookingId     String   @unique
   studentId     String
-  amount        Int           // in cents
-  currency      String        @default("INR")
-  status        PaymentStatus @default(PENDING)
-  razorpayId    String?       // Razorpay payment ID
-  razorpayOrderId String?     // Razorpay order ID
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  amount        Int      // in cents
+  currency      String   @default("INR")
+  status        String   @default("PENDING") // PENDING, COMPLETED, FAILED, REFUNDED
+  razorpayId    String?  // Razorpay payment ID
+  razorpayOrderId String? // Razorpay order ID
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
@@ -132,37 +132,16 @@ model LeaderboardCache {
   mentorName  String
   rating      Float
   totalReviews Int
-  tier        MentorTier
-  expertise   String[]
+  tier        String   // TIER1, TIER2, TIER3
+  expertise   String   // comma-separated values
   rank        Int
   updatedAt   DateTime @updatedAt
 
   @@map("leaderboard_cache")
 }
 
-// Enums
-enum Role {
-  STUDENT
-  MENTOR
-  ADMIN
-}
-
-enum MentorTier {
-  TIER1
-  TIER2
-  TIER3
-}
-
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  COMPLETED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
-}
+// Note: SQLite doesn't support enums, so we use String types with comments
+// Role values: "STUDENT", "MENTOR", "ADMIN"
+// MentorTier values: "TIER1", "TIER2", "TIER3"
+// BookingStatus values: "PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"
+// PaymentStatus values: "PENDING", "COMPLETED", "FAILED", "REFUNDED"

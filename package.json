@@ -12,11 +12,13 @@
     "dev:frontend": "npm run dev --workspace=frontend",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "ts-node prisma/seed.ts",
+    "db:seed": "node prisma/seed.js",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset --force",
     "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
-    "install:all": "npm install && npm install --workspace=frontend && npm install --workspace=backend"
+    "install:all": "npm install && npm install --workspace=frontend && npm install --workspace=backend",
+    "verify": "node verify-setup.js",
+    "setup": "npm install && npm run db:migrate && npm run db:seed && npm run verify"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
@@ -26,7 +28,8 @@
   },
   "dependencies": {
     "prisma": "^5.4.2",
-    "@prisma/client": "^5.4.2"
+    "@prisma/client": "^5.4.2",
+    "bcryptjs": "^2.4.3"
   },
   "engines": {
     "node": ">=18.0.0"

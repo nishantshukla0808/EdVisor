@@ -26,13 +26,13 @@ async function main() {
       name: 'Demo Student',
       role: 'STUDENT',
       emailVerified: true,
-        student: {
-          create: {
-            bio: 'Aspiring developer looking to learn from the best!',
-            goals: 'Learn React,Master JavaScript,Build full-stack apps',
-            interests: 'Web Development,Mobile Apps,UI/UX Design'
-          }
+      student: {
+        create: {
+          bio: 'Aspiring developer looking to learn from the best!',
+          goals: 'Learn React,Master JavaScript,Build full-stack apps',
+          interests: 'Web Development,Mobile Apps,UI/UX Design'
         }
+      }
     },
     include: {
       student: true
@@ -49,7 +49,7 @@ async function main() {
       bio: 'Senior Full-Stack Engineer at Google with 8 years of experience in React, Node.js, and system design. I love helping developers level up their skills!',
       expertise: 'React,Node.js,System Design,JavaScript,TypeScript',
       experience: 8,
-      tier: 'TIER1' as const,
+      tier: 'TIER1',
       hourlyRate: 8000, // ₹80/hour
       rating: 4.9,
       totalReviews: 45
@@ -60,7 +60,7 @@ async function main() {
       bio: 'Data Scientist and ML Engineer with expertise in Python, TensorFlow, and building production ML systems. Former Microsoft, now at startup.',
       expertise: 'Python,Machine Learning,Data Science,TensorFlow,AWS',
       experience: 6,
-      tier: 'TIER2' as const,
+      tier: 'TIER2',
       hourlyRate: 6000, // ₹60/hour
       rating: 4.8,
       totalReviews: 32
@@ -71,7 +71,7 @@ async function main() {
       bio: 'VP of Product at Stripe. 10+ years in product management, strategy, and team leadership. Helped launch products used by millions.',
       expertise: 'Product Management,Strategy,Leadership,Growth,Analytics',
       experience: 12,
-      tier: 'TIER1' as const,
+      tier: 'TIER1',
       hourlyRate: 9000, // ₹90/hour
       rating: 5.0,
       totalReviews: 28
@@ -82,7 +82,7 @@ async function main() {
       bio: 'DevOps Engineer and Cloud Architect specializing in AWS, Kubernetes, and CI/CD. Building scalable infrastructure for high-traffic applications.',
       expertise: 'DevOps,AWS,Kubernetes,Docker,Terraform',
       experience: 7,
-      tier: 'TIER2' as const,
+      tier: 'TIER2',
       hourlyRate: 5500, // ₹55/hour
       rating: 4.7,
       totalReviews: 38
@@ -93,7 +93,7 @@ async function main() {
       bio: 'Mobile App Developer and Flutter expert. Built 20+ mobile apps with millions of downloads. Passionate about clean architecture and UX.',
       expertise: 'Flutter,Dart,Mobile Development,Firebase,Clean Architecture',
       experience: 5,
-      tier: 'TIER3' as const,
+      tier: 'TIER3',
       hourlyRate: 4500, // ₹45/hour
       rating: 4.6,
       totalReviews: 24
@@ -143,8 +143,8 @@ async function main() {
   // Create a demo booking
   const booking = await prisma.booking.create({
     data: {
-      studentId: studentUser.student!.id,
-      mentorId: mentors[0].mentor!.id, // Sarah Chen
+      studentId: studentUser.student.id,
+      mentorId: mentors[0].mentor.id, // Sarah Chen
       startTime: new Date('2024-01-15T10:00:00Z'),
       endTime: new Date('2024-01-15T11:00:00Z'),
       status: 'COMPLETED',
@@ -152,7 +152,7 @@ async function main() {
       meetingLink: 'https://meet.google.com/demo-link',
       payment: {
         create: {
-          studentId: studentUser.student!.id,
+          studentId: studentUser.student.id,
           amount: 8000, // ₹80
           currency: 'INR',
           status: 'COMPLETED',
@@ -172,8 +172,8 @@ async function main() {
   const review = await prisma.review.create({
     data: {
       bookingId: booking.id,
-      studentId: studentUser.student!.id,
-      mentorId: mentors[0].mentor!.id,
+      studentId: studentUser.student.id,
+      mentorId: mentors[0].mentor.id,
       rating: 5,
       comment: 'Absolutely fantastic session! Sarah explained React hooks and state management so clearly. Her real-world examples really helped me understand the concepts. Highly recommend!'
     }
@@ -186,12 +186,12 @@ async function main() {
     const mentor = mentors[i];
     await prisma.leaderboardCache.create({
       data: {
-        mentorId: mentor.mentor!.id,
+        mentorId: mentor.mentor.id,
         mentorName: mentor.name,
-        rating: mentor.mentor!.rating,
-        totalReviews: mentor.mentor!.totalReviews,
-        tier: mentor.mentor!.tier,
-        expertise: mentor.mentor!.expertise,
+        rating: mentor.mentor.rating,
+        totalReviews: mentor.mentor.totalReviews,
+        tier: mentor.mentor.tier,
+        expertise: mentor.mentor.expertise,
         rank: i + 1
       }
     });
@@ -203,14 +203,14 @@ async function main() {
   const additionalBookings = [
     {
       mentorIndex: 1, // Marcus Johnson
-      status: 'CONFIRMED' as const,
+      status: 'CONFIRMED',
       startTime: new Date('2024-01-20T14:00:00Z'),
       endTime: new Date('2024-01-20T15:30:00Z'),
       notes: 'Want to learn about machine learning fundamentals'
     },
     {
       mentorIndex: 2, // Elena Rodriguez
-      status: 'PENDING' as const,
+      status: 'PENDING',
       startTime: new Date('2024-01-25T16:00:00Z'),
       endTime: new Date('2024-01-25T17:00:00Z'),
       notes: 'Career guidance and product management insights'
@@ -221,16 +221,16 @@ async function main() {
     const mentor = mentors[bookingData.mentorIndex];
     await prisma.booking.create({
       data: {
-        studentId: studentUser.student!.id,
-        mentorId: mentor.mentor!.id,
+        studentId: studentUser.student.id,
+        mentorId: mentor.mentor.id,
         startTime: bookingData.startTime,
         endTime: bookingData.endTime,
         status: bookingData.status,
         notes: bookingData.notes,
         payment: {
           create: {
-            studentId: studentUser.student!.id,
-            amount: mentor.mentor!.hourlyRate * 1.5, // 1.5 hour session
+            studentId: studentUser.student.id,
+            amount: mentor.mentor.hourlyRate * 1.5, // 1.5 hour session
             currency: 'INR',
             status: bookingData.status === 'CONFIRMED' ? 'COMPLETED' : 'PENDING'
           }
