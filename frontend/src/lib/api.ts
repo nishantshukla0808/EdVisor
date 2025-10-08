@@ -1,87 +1,113 @@
 import axios from 'axios';
 
-export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api',
-  timeout: 10000,
+// Create axios instance with base configuration
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor
-apiClient.interceptors.request.use(
-  (config) => {
-    // Add auth token if available
-    const token = localStorage.getItem('token');
+// Add token to requests if available
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('edvisor_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
   }
-);
+  return config;
+});
 
-// Response interceptor
-apiClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+// Handle 401 responses
+api.interceptors.response.use(
+  (response) => response,
   (error) => {
-    // Handle common error responses
-    if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
-      localStorage.removeItem('token');
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('edvisor_token');
+      localStorage.removeItem('edvisor_user');
       window.location.href = '/auth/login';
     }
-    
     return Promise.reject(error);
   }
 );
 
-// API endpoints
-export const api = {
-  // Auth endpoints
-  auth: {
-    login: (data: { email: string; password: string }) =>
-      apiClient.post('/auth/login', data),
-    register: (data: { email: string; password: string; name: string; role: string }) =>
-      apiClient.post('/auth/register', data),
-    me: () => apiClient.get('/auth/me'),
-  },
-
-  // Mentors endpoints
-  mentors: {
-    getAll: (params?: any) => apiClient.get('/mentors', { params }),
-    getById: (id: string) => apiClient.get(`/mentors/${id}`),
-    getLeaderboard: (params?: any) => apiClient.get('/mentors/leaderboard/top', { params }),
-    updateProfile: (data: any) => apiClient.put('/mentors/profile', data),
-  },
-
-  // Bookings endpoints
-  bookings: {
-    create: (data: any) => apiClient.post('/bookings', data),
-    getAll: (params?: any) => apiClient.get('/bookings', { params }),
-    updateStatus: (id: string, status: string) =>
-      apiClient.patch(`/bookings/${id}/status`, { status }),
-  },
-
-  // Payments endpoints
-  payments: {
-    createOrder: (data: { bookingId: string }) =>
-      apiClient.post('/payments/create-order', data),
-    verify: (data: any) => apiClient.post('/payments/verify', data),
-    getHistory: (params?: any) => apiClient.get('/payments', { params }),
-    getStatus: (paymentId: string) =>
-      apiClient.get(`/payments/${paymentId}/status`),
-  },
-
-  // Reviews endpoints
-  reviews: {
-    create: (data: any) => apiClient.post('/reviews', data),
-    getByMentor: (mentorId: string, params?: any) =>
-      apiClient.get(`/reviews/mentor/${mentorId}`, { params }),
-    getMy: () => apiClient.get('/reviews/my-reviews'),
-  },
+// Auth API calls
+export const authAPI = {
+  login: (email: string, password: string) =>
+    api.post('/auth/login', { email, password }),
+  
+  signup: (name: string, email: string, password: string) =>
+    api.post('/auth/signup', { name, email, password }),
+  
+  getMe: () => api.get('/auth/me'),
 };
+
+// Mentors API calls
+export const mentorsAPI = {
+  getMentors: (params?: {
+    q?: string;
+    domain?: string;
+    tier?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    sort?: string;
+    page?: number;
+    limit?: number;
+  }) => api.get('/mentors', { params }),
+  
+  getMentor: (id: string) => api.get(`/mentors/${id}`),
+};
+
+// Bookings API calls
+export const bookingsAPI = {
+  createBooking: (data: {
+    mentorId: string;
+    sessionType: string;
+    scheduledAt: string;
+    duration: number;
+    notes?: string;
+  }) => api.post('/bookings', data),
+  
+  getBooking: (id: string) => api.get(`/bookings/${id}`),
+  
+  getMyBookings: () => api.get('/students/me/bookings'),
+};
+
+// Reviews API calls
+export const reviewsAPI = {
+  createReview: (data: {
+    bookingId: string;
+    mentorId: string;
+    rating: number;
+    comment?: string;
+  }) => api.post('/reviews', data),
+};
+
+// Payments API calls
+export const paymentsAPI = {
+  initiatePayment: (data: {
+    bookingId: string;
+    amount: number;
+  }) => api.post('/payments/initiate', data),
+};
+
+// Leaderboard API calls
+export const leaderboardAPI = {
+  getLeaderboard: (params?: {
+    domain?: string;
+    tier?: string;
+    limit?: number;
+  }) => api.get('/leaderboard', { params }),
+  
+  getDomains: () => api.get('/leaderboard/domains'),
+  
+  getStats: () => api.get('/leaderboard/stats'),
+};
+
+// Students API calls
+export const studentsAPI = {
+  getDashboard: () => api.get('/students/me/dashboard'),
+};
+
+export default api;
