@@ -163,9 +163,98 @@ router.get('/me/bookings', authenticateToken, requireStudent, async (req: Authen
       return res.status(404).json({ error: 'Student profile not found' });
     }
 
-    // Redirect to the main bookings endpoint
-    req.params.id = student.id;
-    return router.handle(req, res, next);
+    // Get bookings for current student
+    const { status, page, limit } = value;
+    const skip = (page - 1) * limit;
+
+    // Build query filters
+    const where: any = { studentId: student.id };
+    if (status) {
+      where.status = status;
+    }
+
+    // Get bookings with related data
+    const [bookings, total] = await Promise.all([
+      prisma.booking.findMany({
+        where,
+        include: {
+          mentor: {
+            include: {
+              user: { 
+                select: { 
+                  id: true, 
+                  name: true, 
+                  avatar: true 
+                } 
+              }
+            }
+          },
+          payment: {
+            select: {
+              id: true,
+              amount: true,
+              currency: true,
+              status: true,
+              createdAt: true
+            }
+          },
+          review: {
+            select: {
+              id: true,
+              rating: true,
+              comment: true,
+              createdAt: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit
+      }),
+      prisma.booking.count({ where })
+    ]);
+
+    // Format response data
+    const formattedBookings = bookings.map(booking => ({
+      id: booking.id,
+      mentor: {
+        id: booking.mentor.id,
+        name: booking.mentor.user.name,
+        avatar: booking.mentor.user.avatar,
+        tier: booking.mentor.tier,
+        expertise: booking.mentor.expertise
+      },
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+      durationMin: Math.round((new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / 60000),
+      status: booking.status,
+      payment: booking.payment ? {
+        id: booking.payment.id,
+        amount: booking.payment.amount,
+        currency: booking.payment.currency,
+        status: booking.payment.status,
+        createdAt: booking.payment.createdAt
+      } : null,
+      review: booking.review,
+      meetingLink: booking.meetingLink,
+      notes: booking.notes,
+      createdAt: booking.createdAt,
+      updatedAt: booking.updatedAt
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        bookings: formattedBookings,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+          hasMore: skip + bookings.length < total
+        }
+      }
+    });
   } catch (error) {
     next(error);
   }

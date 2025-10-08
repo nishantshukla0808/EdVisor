@@ -47,13 +47,13 @@ router.get('/', async (req, res, next) => {
       where.OR = [
         { user: { name: { contains: q, mode: 'insensitive' } } },
         { bio: { contains: q, mode: 'insensitive' } },
-        { expertise: { has: q } }
+        { expertise: { contains: q, mode: 'insensitive' } }
       ];
     }
 
     // Domain/expertise filter
     if (domain) {
-      where.expertise = { has: domain };
+      where.expertise = { contains: domain, mode: 'insensitive' };
     }
 
     // Tier filter
@@ -184,8 +184,9 @@ router.get('/:id', async (req, res, next) => {
     }
 
     // Mock institution and availability data
+    const firstExpertise = mentor.expertise.split(',')[0]?.trim();
     const mockInstitution = {
-      name: getMockInstitution(mentor.expertise[0]),
+      name: getMockInstitution(firstExpertise),
       logo: null
     };
 

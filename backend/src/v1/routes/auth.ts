@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import Joi from 'joi';
 import { prisma } from '../../server';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -58,8 +58,8 @@ router.post('/signup', async (req, res, next) => {
         student: {
           create: {
             bio: '',
-            goals: [],
-            interests: []
+            goals: '',
+            interests: ''
           }
         }
       },
@@ -173,7 +173,7 @@ router.post('/login', async (req, res, next) => {
  * GET /api/v1/auth/me
  * Get current authenticated user profile
  */
-router.get('/me', authenticateToken, async (req, res, next) => {
+router.get('/me', authenticateToken, async (req: AuthenticatedRequest, res, next) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user!.id },

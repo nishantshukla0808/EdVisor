@@ -21,8 +21,7 @@ router.post('/ranking/compute', authenticateToken, requireAdmin, async (req: Aut
       },
       orderBy: [
         { rating: 'desc' },
-        { totalReviews: 'desc' },
-        { createdAt: 'asc' }
+        { totalReviews: 'desc' }
       ]
     });
 
@@ -42,7 +41,7 @@ router.post('/ranking/compute', authenticateToken, requireAdmin, async (req: Aut
         const reviews = mentor.reviews;
         const totalReviews = reviews.length;
         const averageRating = totalReviews > 0 
-          ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+          ? reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / totalReviews
           : 0;
 
         // Update mentor's rating if different
@@ -167,7 +166,7 @@ router.get('/mentors/pending', authenticateToken, requireAdmin, async (req: Auth
             }
           }
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { user: { createdAt: 'desc' } },
         skip,
         take: Number(limit)
       }),

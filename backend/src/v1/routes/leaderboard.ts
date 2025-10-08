@@ -34,7 +34,7 @@ router.get('/', async (req, res, next) => {
     };
 
     if (domain) {
-      where.expertise = { has: domain };
+      where.expertise = { contains: domain };
     }
 
     if (tier) {
@@ -132,7 +132,9 @@ router.get('/domains', async (req, res, next) => {
     const expertiseCount: Record<string, number> = {};
     
     mentors.forEach(mentor => {
-      mentor.expertise.forEach(skill => {
+      // expertise is now a comma-separated string
+      const skills = mentor.expertise.split(',').map(skill => skill.trim()).filter(Boolean);
+      skills.forEach(skill => {
         expertiseCount[skill] = (expertiseCount[skill] || 0) + 1;
       });
     });
@@ -231,7 +233,7 @@ async function getLeaderboardStats(domain?: string, tier?: string) {
   const where: any = { isAvailable: true };
   
   if (domain) {
-    where.expertise = { has: domain };
+    where.expertise = { contains: domain };
   }
   
   if (tier) {

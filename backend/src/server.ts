@@ -5,9 +5,10 @@ import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import path from 'path';
 
 import { PrismaClient } from '@prisma/client';
-import { errorHandler } from './middleware/errorHandler';
+import { errorHandler } from './v1/middleware/errorHandler';
 
 // V1 API Routes
 import authV1Routes from './v1/routes/auth';
