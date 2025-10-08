@@ -1,0 +1,168 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String?
+  name      String
+  avatar    String?
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // OAuth fields
+  googleId       String?
+  emailVerified  Boolean @default(false)
+  
+  // Relationships
+  student Student?
+  mentor  Mentor?
+
+  @@map("users")
+}
+
+model Student {
+  id       String @id @default(cuid())
+  userId   String @unique
+  bio      String?
+  goals    String[]
+  interests String[]
+  
+  user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Relationships
+  bookings Booking[]
+  reviews  Review[]
+  payments Payment[]
+
+  @@map("students")
+}
+
+model Mentor {
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  bio         String
+  expertise   String[]
+  experience  Int          // years of experience
+  tier        MentorTier   @default(TIER1)
+  hourlyRate  Int          // in cents (e.g., 5000 = $50.00)
+  availability Json        // { monday: ['09:00-17:00'], tuesday: [], ... }
+  isAvailable Boolean      @default(true)
+  rating      Float        @default(0.0)
+  totalReviews Int         @default(0)
+  
+  user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Relationships
+  bookings Booking[]
+  reviews  Review[]
+  
+  @@map("mentors")
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  studentId   String
+  mentorId    String
+  startTime   DateTime
+  endTime     DateTime
+  status      BookingStatus @default(PENDING)
+  meetingLink String?
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  mentor  Mentor  @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  
+  // Relationships
+  review  Review?
+  payment Payment?
+
+  @@map("bookings")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  bookingId String   @unique
+  studentId String
+  mentorId  String
+  rating    Int      // 1-5 stars
+  comment   String?
+  createdAt DateTime @default(now())
+  
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  mentor  Mentor  @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  bookingId     String        @unique
+  studentId     String
+  amount        Int           // in cents
+  currency      String        @default("INR")
+  status        PaymentStatus @default(PENDING)
+  razorpayId    String?       // Razorpay payment ID
+  razorpayOrderId String?     // Razorpay order ID
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model LeaderboardCache {
+  id          String   @id @default(cuid())
+  mentorId    String   @unique
+  mentorName  String
+  rating      Float
+  totalReviews Int
+  tier        MentorTier
+  expertise   String[]
+  rank        Int
+  updatedAt   DateTime @updatedAt
+
+  @@map("leaderboard_cache")
+}
+
+// Enums
+enum Role {
+  STUDENT
+  MENTOR
+  ADMIN
+}
+
+enum MentorTier {
+  TIER1
+  TIER2
+  TIER3
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
