@@ -63,10 +63,10 @@ export const mentorsAPI = {
 export const bookingsAPI = {
   createBooking: (data: {
     mentorId: string;
-    sessionType: string;
-    scheduledAt: string;
-    duration: number;
-    notes?: string;
+    startTime: string;
+    durationMin: number;
+    preQuestions?: string[];
+    priceTotal: number;
   }) => api.post('/bookings', data),
   
   getBooking: (id: string) => api.get(`/bookings/${id}`),
@@ -78,8 +78,10 @@ export const bookingsAPI = {
 export const reviewsAPI = {
   createReview: (data: {
     bookingId: string;
-    mentorId: string;
     rating: number;
+    clarity: number;
+    relevance: number;
+    roadmap: number;
     comment?: string;
   }) => api.post('/reviews', data),
 };
@@ -88,7 +90,6 @@ export const reviewsAPI = {
 export const paymentsAPI = {
   initiatePayment: (data: {
     bookingId: string;
-    amount: number;
   }) => api.post('/payments/initiate', data),
 };
 
