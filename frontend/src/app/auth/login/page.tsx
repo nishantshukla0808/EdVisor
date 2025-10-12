@@ -27,10 +27,8 @@ export default function LoginPage() {
     setIsLoading(true);
     
     try {
-      const success = await login(email, password);
-      if (success) {
-        router.push('/mentors');
-      }
+      // AuthContext now handles redirect automatically
+      await login(email, password);
     } catch (error) {
       // Error is handled in the login function
     } finally {
@@ -38,8 +36,18 @@ export default function LoginPage() {
     }
   };
 
-  const fillDemoCredentials = () => {
-    setEmail('demo@student.test');
+  const fillDemoCredentials = (role: 'student' | 'mentor' | 'admin') => {
+    switch (role) {
+      case 'student':
+        setEmail('demo@student.test');
+        break;
+      case 'mentor':
+        setEmail('demo@mentor.test');
+        break;
+      case 'admin':
+        setEmail('demo@admin.test');
+        break;
+    }
     setPassword('demo123');
   };
 
@@ -151,17 +159,36 @@ export default function LoginPage() {
             {/* Demo Credentials */}
             <div className="mt-6 border-t border-gray-200 pt-6">
               <div className="bg-blue-50 p-4 rounded-lg">
-                <h3 className="text-sm font-medium text-blue-800 mb-2">Demo Account</h3>
+                <h3 className="text-sm font-medium text-blue-800 mb-2">Demo Accounts</h3>
                 <p className="text-xs text-blue-600 mb-3">
-                  Try EdVisor with our demo student account
+                  Try EdVisor with different demo accounts
                 </p>
-                <button
-                  type="button"
-                  onClick={fillDemoCredentials}
-                  className="w-full btn btn-secondary text-sm py-2"
-                >
-                  Use Demo Credentials
-                </button>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => fillDemoCredentials('student')}
+                    className="w-full btn btn-secondary text-sm py-2 flex items-center justify-center space-x-2"
+                  >
+                    <span>📚</span>
+                    <span>Student Account</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fillDemoCredentials('mentor')}
+                    className="w-full btn btn-secondary text-sm py-2 flex items-center justify-center space-x-2"
+                  >
+                    <span>👨‍🏫</span>
+                    <span>Mentor Account</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fillDemoCredentials('admin')}
+                    className="w-full btn btn-secondary text-sm py-2 flex items-center justify-center space-x-2"
+                  >
+                    <span>⚙️</span>
+                    <span>Admin Account</span>
+                  </button>
+                </div>
               </div>
             </div>
           </form>

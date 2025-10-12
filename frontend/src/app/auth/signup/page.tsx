@@ -18,7 +18,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,17 +42,10 @@ export default function SignupPage() {
     setIsLoading(true);
     
     try {
-      await authAPI.signup(formData.name, formData.email, formData.password);
-      toast.success('Account created successfully!');
-      
-      // Auto-login after signup
-      const success = await login(formData.email, formData.password);
-      if (success) {
-        router.push('/mentors');
-      }
+      // AuthContext handles signup and auto-redirect
+      await signup(formData.name, formData.email, formData.password);
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Failed to create account';
-      toast.error(message);
+      // Error is handled in AuthContext
     } finally {
       setIsLoading(false);
     }

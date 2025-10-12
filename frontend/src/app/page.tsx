@@ -32,7 +32,7 @@ export default function HomePage() {
               Connect with expert mentors for personalized learning, career guidance, 
               and skill development. Start your journey to success today.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link
                 href="/mentors"
                 className="btn bg-white text-blue-600 hover:bg-blue-50 px-8 py-3 text-lg flex items-center justify-center space-x-2"
@@ -44,7 +44,31 @@ export default function HomePage() {
                 href="/auth/login"
                 className="btn border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3 text-lg"
               >
-                Login
+                Student Login
+              </Link>
+            </div>
+            
+            {/* Role-based login links */}
+            <div className="flex flex-wrap gap-2 justify-center text-sm">
+              <Link
+                href="/mentor/login"
+                className="text-blue-200 hover:text-white underline"
+              >
+                Mentor Login
+              </Link>
+              <span className="text-blue-300">•</span>
+              <Link
+                href="/admin/login"
+                className="text-blue-200 hover:text-white underline"
+              >
+                Admin Login
+              </Link>
+              <span className="text-blue-300">•</span>
+              <Link
+                href="/mentor/signup"
+                className="text-blue-200 hover:text-white underline"
+              >
+                Become a Mentor
               </Link>
             </div>
           </div>

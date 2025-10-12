@@ -50,19 +50,26 @@ export default function MentorsPage() {
     setPage(1);
   };
 
-  const transformMentorData = (mentor: any): MentorCardType => ({
-    id: mentor.id,
-    name: mentor.user.name,
-    avatar: mentor.user.avatar,
-    bio: mentor.bio,
-    expertise: mentor.expertise,
-    experience: mentor.experience,
-    tier: mentor.tier,
-    pricePerHour: mentor.hourlyRate,
-    rating: mentor.rating,
-    totalReviews: mentor.totalReviews,
-    isAvailable: mentor.isAvailable
-  });
+  const transformMentorData = (mentor: any): MentorCardType => {
+    console.log('Transforming mentor data:', JSON.stringify(mentor));
+    
+    // Handle different mentor data structures
+    const mentorUser = mentor.user || mentor;
+    
+    return {
+      id: mentor.id || mentor._id,
+      name: mentorUser.name || mentor.name || 'Unknown Mentor',
+      avatar: mentorUser.avatar || mentor.avatar || '/default-avatar.png',
+      bio: mentor.bio || 'No bio available',
+      expertise: mentor.expertise || [],
+      experience: mentor.experience || 0,
+      tier: mentor.tier || 'TIER3',
+      pricePerHour: mentor.pricePerHour || mentor.hourlyRate || 0,
+      rating: mentor.rating || 0,
+      totalReviews: mentor.totalReviews || mentor.reviewCount || 0,
+      isAvailable: mentor.isAvailable !== undefined ? mentor.isAvailable : true
+    };
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">

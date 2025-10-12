@@ -35,6 +35,10 @@ export default function MentorProfilePage() {
 
   const mentor = mentorResponse?.data.data.mentor;
 
+  // Debug logging to understand data structure
+  console.log('Mentor data:', mentor);
+  console.log('Mentor user:', mentor?.user);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -61,7 +65,7 @@ export default function MentorProfilePage() {
   }
 
   const expertiseList = mentor.expertise.split(',').map((skill: string) => skill.trim());
-  const availability = mentor.availability ? JSON.parse(mentor.availability) : null;
+  const availability = mentor.availability || null;
 
   const getTierColor = (tier: string) => {
     switch (tier) {
@@ -107,17 +111,17 @@ export default function MentorProfilePage() {
               {/* Profile Header */}
               <div className="text-center mb-6">
                 <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  {mentor.user.avatar ? (
+                  {(mentor.user?.avatar || mentor.avatar) ? (
                     <img 
-                      src={mentor.user.avatar} 
-                      alt={mentor.user.name}
+                      src={mentor.user?.avatar || mentor.avatar} 
+                      alt={mentor.user?.name || mentor.name || 'Mentor'}
                       className="w-24 h-24 rounded-full object-cover"
                     />
                   ) : (
                     <User className="w-12 h-12 text-blue-600" />
                   )}
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">{mentor.user.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">{mentor.user?.name || mentor.name || 'Unknown Mentor'}</h1>
                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-4 ${getTierColor(mentor.tier)}`}>
                   <Award className="w-4 h-4 mr-1" />
                   {mentor.tier}
@@ -226,7 +230,7 @@ export default function MentorProfilePage() {
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Expertise</h3>
                       <div className="flex flex-wrap gap-2">
-                        {expertiseList.map((skill, index) => (
+                        {expertiseList.map((skill: string, index: number) => (
                           <span 
                             key={index}
                             className="px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded-full"
@@ -322,7 +326,7 @@ export default function MentorProfilePage() {
                                   </span>
                                 </div>
                                 <p className="text-gray-700 text-sm">
-                                  Great session! {mentor.user.name} provided excellent guidance and practical insights. 
+                                  Great session! {mentor.user?.name || mentor.name || 'The mentor'} provided excellent guidance and practical insights. 
                                   The session was well-structured and very helpful for my career growth.
                                 </p>
                               </div>

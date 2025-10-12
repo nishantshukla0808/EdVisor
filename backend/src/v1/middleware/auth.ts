@@ -20,10 +20,16 @@ export const authenticateToken = async (
   next: NextFunction
 ) => {
   try {
+    console.log('=== AUTH MIDDLEWARE DEBUG ===');
+    console.log('Headers:', req.headers);
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    console.log('Auth header:', authHeader);
+    console.log('Token present:', !!token);
+    console.log('Token length:', token?.length);
 
     if (!token) {
+      console.log('ERROR: No token provided');
       return res.status(401).json({ 
         error: 'Access token required',
         message: 'Please provide a valid Bearer token'
@@ -31,9 +37,12 @@ export const authenticateToken = async (
     }
 
     // Verify token
+    console.log('Verifying token...');
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    console.log('Decoded token:', decoded);
     
     // Verify user still exists and is active
+    console.log('Looking up user with ID:', decoded.userId);
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: { 
@@ -43,8 +52,13 @@ export const authenticateToken = async (
         emailVerified: true 
       }
     });
+    console.log('User found:', !!user);
+    if (user) {
+      console.log('User details:', { id: user.id, email: user.email, role: user.role });
+    }
 
     if (!user) {
+      console.log('ERROR: User not found in database');
       return res.status(401).json({ 
         error: 'Invalid token',
         message: 'User not found or token expired'
@@ -57,15 +71,20 @@ export const authenticateToken = async (
       email: user.email,
       role: user.role
     };
+    console.log('Authentication successful, user attached:', req.user);
+    console.log('==============================');
 
     next();
   } catch (error) {
+    console.log('Authentication error:', error);
     if (error instanceof jwt.JsonWebTokenError) {
+      console.log('JWT Error:', error.message);
       return res.status(403).json({ 
         error: 'Invalid token',
         message: 'Token is malformed or expired'
       });
     }
+    console.log('Other auth error:', error);
     next(error);
   }
 };
@@ -76,20 +95,31 @@ export const authenticateToken = async (
  */
 export const requireRole = (roles: string[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    console.log('=== ROLE CHECK DEBUG ===');
+    console.log('Required roles:', roles);
+    console.log('User from request:', req.user);
+    
     if (!req.user) {
+      console.log('ERROR: No user attached to request');
       return res.status(401).json({ 
         error: 'Authentication required',
         message: 'Please login to access this resource'
       });
     }
 
+    console.log('User role:', req.user.role);
+    console.log('Role match:', roles.includes(req.user.role));
+    
     if (!roles.includes(req.user.role)) {
+      console.log('ERROR: Role check failed');
       return res.status(403).json({ 
         error: 'Insufficient permissions',
         message: `Access denied. Required roles: ${roles.join(', ')}`
       });
     }
-
+    
+    console.log('Role check passed');
+    console.log('========================');
     next();
   };
 };

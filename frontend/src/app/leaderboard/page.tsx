@@ -166,7 +166,7 @@ export default function LeaderboardPage() {
         ) : (
           <div className="space-y-4">
             {/* Top 3 */}
-            {leaderboard.slice(0, 3).map((mentor: any, index) => (
+            {leaderboard.slice(0, 3).map((mentor: any, index: number) => (
               <div 
                 key={mentor.mentorId}
                 className={`bg-white rounded-lg shadow-lg overflow-hidden border-l-4 ${

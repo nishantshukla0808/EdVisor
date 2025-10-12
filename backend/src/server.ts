@@ -12,13 +12,14 @@ import { errorHandler } from './v1/middleware/errorHandler';
 
 // V1 API Routes
 import authV1Routes from './v1/routes/auth';
-import mentorV1Routes from './v1/routes/mentors';
+import mentorsV1Routes from './v1/routes/mentors'; // Public mentor browsing
 import bookingV1Routes from './v1/routes/bookings';
 import paymentV1Routes from './v1/routes/payments';
 import reviewV1Routes from './v1/routes/reviews';
 import leaderboardV1Routes from './v1/routes/leaderboard';
 import adminV1Routes from './v1/routes/admin';
 import studentV1Routes from './v1/routes/students';
+import mentorPortalV1Routes from './v1/routes/mentor'; // Mentor-only routes
 
 // Load environment variables
 dotenv.config();
@@ -73,13 +74,14 @@ app.get('/health', (req, res) => {
 
 // API V1 Routes
 app.use('/api/v1/auth', authV1Routes);
-app.use('/api/v1/mentors', mentorV1Routes);
+app.use('/api/v1/mentors', mentorsV1Routes); // Public mentor browsing
 app.use('/api/v1/bookings', bookingV1Routes);
 app.use('/api/v1/payments', paymentV1Routes);
 app.use('/api/v1/reviews', reviewV1Routes);
 app.use('/api/v1/leaderboard', leaderboardV1Routes);
 app.use('/api/v1/admin', adminV1Routes);
 app.use('/api/v1/students', studentV1Routes);
+app.use('/api/v1/mentor', mentorPortalV1Routes); // Mentor-only portal routes
 
 // API Info endpoint
 app.get('/api/v1', (req, res) => {
@@ -95,6 +97,7 @@ app.get('/api/v1', (req, res) => {
       reviews: '/api/v1/reviews',
       leaderboard: '/api/v1/leaderboard',
       students: '/api/v1/students',
+      mentor: '/api/v1/mentor',
       admin: '/api/v1/admin'
     }
   });

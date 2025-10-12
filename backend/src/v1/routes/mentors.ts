@@ -100,7 +100,7 @@ router.get('/', async (req, res, next) => {
             }
           }
         },
-        orderBy: [orderBy, { createdAt: 'desc' }],
+        orderBy: [orderBy, { rating: 'desc' }],
         skip,
         take: limit
       }),

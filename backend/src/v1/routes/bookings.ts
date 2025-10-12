@@ -51,9 +51,9 @@ router.post('/', authenticateToken, requireStudent, async (req: AuthenticatedReq
       return res.status(404).json({ error: 'Mentor not available' });
     }
 
-    // Validate price calculation
-    const expectedPrice = Math.round((durationMin / 60) * mentor.hourlyRate);
-    if (Math.abs(priceTotal - expectedPrice) > 100) { // Allow 1 rupee difference for rounding
+    // Validate price calculation (convert hourlyRate from cents to rupees)
+    const expectedPrice = Math.round((durationMin / 60) * (mentor.hourlyRate / 100));
+    if (Math.abs(priceTotal - expectedPrice) > 1) { // Allow 1 rupee difference for rounding
       return res.status(400).json({
         error: 'Invalid price calculation',
         expected: expectedPrice,
@@ -118,7 +118,7 @@ router.post('/', authenticateToken, requireStudent, async (req: AuthenticatedReq
         payment: {
           create: {
             studentId: student.id,
-            amount: priceTotal,
+            amount: priceTotal * 100, // Convert to paise for Razorpay
             currency: 'INR',
             status: 'PENDING'
           }
@@ -147,7 +147,7 @@ router.post('/', authenticateToken, requireStudent, async (req: AuthenticatedReq
           durationMin,
           status: booking.status,
           paymentStatus: booking.payment?.status,
-          priceTotal: booking.payment?.amount || 0,
+          priceTotal: Math.round((booking.payment?.amount || 0) / 100), // Convert back to rupees for display
           notes: booking.notes,
           createdAt: booking.createdAt
         }
